@@ -1,54 +1,55 @@
 <template>
   <q-layout>
-    <div slot="header" class="toolbar">
-      <q-toolbar-title :padding="1">
-        
-      </q-toolbar-title>
-      <button @click="$refs.modalOwner.open()">
-        <i>build</i>
-      </button>
-    </div>
 
-    <div class="layout-view">
-      <ul class="breadcrumb">
-        <li><a><i>list</i> Lista de repositórios</a></li>
-      </ul>
-
-      <div v-if="owner.repositories.length > 0" class="list item-delimiter">
-        <div class="item" v-for="(rep, index) in owner.repositories" :key=""index>
-          <div class="item-content">
-            <p>
-              
-              <span style="float: right"><i>star</i> </span>
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="owner.repositories.length <= 0">
-        <p>Sem repositórios</p>
-      </div>
-    </div>
-
-
-    <q-modal ref="modalOwner" position="right" :content-css="{padding: '30px'}">
-      <strong>Trocar de organização</strong>
-      <hr>
-      <div class="floating-label">
-        <input required v-model="owner.link" class="full-width">
-        <label>Nome no link do GitHub</label>
-        <button class="primary small full-width" @click="register()">
-          Pesquisar repositórios
-        </button>
-      </div>
+    <q-modal v-model="modalOpened" maximized>
+      <q-modal-layout>
+        <strong>Trocar de organização</strong>
+        <hr>
+        <q-field
+          helper="Digite o número da organização do Github"
+        >
+          <q-input v-model="owner.link" float-label="Organização" />
+        </q-field>
+        <q-btn label="Pesquisar" @click="register" />
+      </q-modal-layout>
     </q-modal>
-  </q-layout>
 
+    <q-layout-header>
+      <q-toolbar color="primary">
+        <q-toolbar-title>
+          {{ owner.name }}
+        </q-toolbar-title>
+        <q-btn flat round dense icon="settings" @click="modalOpened = true" />
+      </q-toolbar>
+    </q-layout-header>
+
+    <q-page-container>
+      <q-list v-if="owner.repositories.length > 0" highlight>
+        <q-list-header>Lista de repositórios</q-list-header>
+
+        <q-item
+          v-for="(rep, index) in owner.repositories"
+          :key="index"
+          @click="details(rep)"
+        >
+          <q-item-main :label="rep.name" />
+          <q-item-side right>
+            {{ rep.stars }} estrelas
+          </q-item-side>
+        </q-item>
+      </q-list>
+
+      <q-alert v-else color="primary" style="margin: 10px">
+        Sem repositórios ainda :(
+      </q-alert>
+    </q-page-container>
+  </q-layout>
 </template>
 
 <script>
-	import { Loading, Toast } from 'quasar'
-	import { commits } from '../resources/github'
+import { Loading } from 'quasar'
+import { repositories } from '../resources/github'
+
 export default {
   data () {
     return {
@@ -56,7 +57,8 @@ export default {
         name: 'Sem organização selecionada',
         link: '',
         repositories: []
-      }
+      },
+      modalOpened: false
     }
   },
   created () {
@@ -71,12 +73,14 @@ export default {
     register () {
       if (this.owner.link !== '') {
         this.owner.repositories = []
-        this.$refs.modalOwner.close()
+        this.modalOpened = false
+
         Loading.show({ message: 'Procurando repositórios' })
 
         repositories(this.owner.link).then((result) => {
           result = result.data
           if (result.length > 0) {
+
             this.owner.name = result[0].owner.login
             for (var i = 0; i < result.length; i++) {
               this.owner.repositories.push({
@@ -85,16 +89,17 @@ export default {
                 full: result[i].full_name
               })
             }
+
             Loading.hide()
           }
         }).catch(() => {
           Loading.hide()
-          this.$refs.modalOwner.open()
-          Toast.create({ html: 'Organização não foi encontrada ou o tempo limite expirou' })
+          this.modalOpened = true
         })
       }
     },
     details (r) {
+      console.log(r)
       this.$router.push({name: 'details', params: {repository: r, owner: this.owner.link}})
     }
   }

@@ -44,22 +44,29 @@ module.exports = function (ctx) {
         'QLayoutDrawer',
         'QPageContainer',
         'QPage',
-        'QToolbar',
-        'QToolbarTitle',
         'QBtn',
         'QIcon',
         'QList',
         'QListHeader',
+        'QAlert',
         'QItem',
         'QItemMain',
-        'QItemSide'
+        'QItemSide',
+        'QModal',
+        'QModalLayout',
+        'QField',
+        'QInput',
+        'QToolbar',
+        'QToolbarTitle'
       ],
       directives: [
-        'Ripple'
+        'Ripple',
+        'CloseOverlay'
       ],
       // Quasar plugins
       plugins: [
-        'Notify'
+        'Notify',
+        'Loading'
       ]
     },
     // animations: 'all' --- includes all animations
