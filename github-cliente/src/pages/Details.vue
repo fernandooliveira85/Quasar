@@ -35,7 +35,7 @@
 </template>
 
 <script>
-import { Loading, Toast } from 'quasar'
+import { Loading } from 'quasar'
 import { commits } from '../resources/github'
 
 export default {
